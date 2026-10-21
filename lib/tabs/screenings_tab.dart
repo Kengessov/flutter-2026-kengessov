@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/genre.dart';
 import '../models/screening.dart';
 import '../widgets/empty_state.dart';
-import '../widgets/screening_card.dart';
+import '../widgets/screening_list.dart';
 
 class ScreeningsTab extends StatefulWidget {
   const ScreeningsTab({
@@ -128,19 +128,10 @@ class _ScreeningsTabState extends State<ScreeningsTab> {
                       ? (label: 'Clear filters', onPress: _clearFilters)
                       : null,
                 )
-              : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 84),
-                  itemCount: items.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final screening = items[index];
-                    return ScreeningCard(
-                      screening: screening,
-                      onOpen: () => widget.onOpen(screening),
-                      onToggleFavourite: () =>
-                          widget.onToggleFavourite(screening),
-                    );
-                  },
+              : ScreeningList(
+                  screenings: items,
+                  onOpen: widget.onOpen,
+                  onToggleFavourite: widget.onToggleFavourite,
                 ),
         ),
       ],
