@@ -9,17 +9,31 @@ class ProfileTab extends StatefulWidget {
     required this.profile,
     required this.screenings,
     required this.onSave,
+    required this.themeMode,
   });
 
   final Profile profile;
   final List<Screening> screenings;
   final ValueChanged<Profile> onSave;
 
+  /// R22: the chips read and write the one mode the app above MaterialApp owns;
+  /// this tab never keeps a copy of it. It is a listenable because a route
+  /// freezes the arguments it was built with, so a plain value would keep
+  /// showing the mode the app had when home was pushed.
+  final ValueNotifier<ThemeMode> themeMode;
+
   @override
   State<ProfileTab> createState() => _ProfileTabState();
 }
 
 class _ProfileTabState extends State<ProfileTab> {
+  /// R22: three chips, one per mode, and nothing else decides the theme.
+  static const List<(ThemeMode, String)> _modes = [
+    (ThemeMode.system, 'System'),
+    (ThemeMode.light, 'Light'),
+    (ThemeMode.dark, 'Dark'),
+  ];
+
   /// A group code is a programme, a speciality, an intake and a stream, like
   /// `BSc-CS-24-1`.
   static final RegExp _groupCode = RegExp(
@@ -166,6 +180,39 @@ class _ProfileTabState extends State<ProfileTab> {
     ),
   );
 
+  Widget _theme(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Theme', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 8),
+            // Listening instead of reading a field: the tap below changes the
+            // notifier, and this builder is the only thing in the tab that is
+            // told about it.
+            ValueListenableBuilder<ThemeMode>(
+              valueListenable: widget.themeMode,
+              builder: (context, mode, _) => Wrap(
+                spacing: 8,
+                children: [
+                  for (final (option, label) in _modes)
+                    ChoiceChip(
+                      label: Text(label),
+                      selected: mode == option,
+                      onSelected: (_) => widget.themeMode.value = option,
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _lists(BuildContext context, List<Screening> screenings) {
     final theme = Theme.of(context);
     // R38: counted from the list on every build, so booking or deleting a
@@ -195,6 +242,8 @@ class _ProfileTabState extends State<ProfileTab> {
         _header(context, widget.profile),
         const SizedBox(height: 12),
         _fields(),
+        const SizedBox(height: 12),
+        _theme(context),
         const SizedBox(height: 12),
         _lists(context, widget.screenings),
       ],

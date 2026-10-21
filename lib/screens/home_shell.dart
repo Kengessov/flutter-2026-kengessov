@@ -11,7 +11,11 @@ import '../tabs/screenings_tab.dart';
 import 'detail_screen.dart';
 
 class HomeShell extends StatefulWidget {
-  const HomeShell({super.key});
+  const HomeShell({super.key, required this.themeMode});
+
+  /// R11: the mode belongs to the app above MaterialApp; the shell only passes
+  /// it on to the profile tab and never reads or writes it itself.
+  final ValueNotifier<ThemeMode> themeMode;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -208,6 +212,7 @@ class _HomeShellState extends State<HomeShell> {
             profile: _profile,
             screenings: _screenings,
             onSave: _saveProfile,
+            themeMode: widget.themeMode,
           ),
         ],
       ),

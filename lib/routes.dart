@@ -12,9 +12,11 @@ class Routes {
   static const String detail = '/detail';
   static const String form = '/form';
 
-  static final Map<String, WidgetBuilder> appRoutes = <String, WidgetBuilder>{
-    home: (context) => const HomeShell(),
-  };
+  /// The home route is built here like every other one, so the theme mode is
+  /// handed down from the app rather than read from somewhere global (R11).
+  static Map<String, WidgetBuilder> appRoutes(
+    ValueNotifier<ThemeMode> themeMode,
+  ) => {home: (context) => HomeShell(themeMode: themeMode)};
 
   static Route<Object?> onGenerateRoute(RouteSettings settings) {
     final arguments = settings.arguments;
