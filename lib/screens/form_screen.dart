@@ -41,6 +41,11 @@ class _FormScreenState extends State<FormScreen> {
   static const int _titleMax = 60;
   static const int _noteMax = 200;
 
+  /// Set on the `Form` instead, this mode validates every field after the
+  /// first character typed anywhere; set per field it waits for that one
+  /// field, so an empty form stays quiet (R33).
+  static const AutovalidateMode _auto = AutovalidateMode.onUserInteraction;
+
   final GlobalKey<FormState> _form = GlobalKey<FormState>();
 
   final TextEditingController _title = TextEditingController();
@@ -264,6 +269,7 @@ class _FormScreenState extends State<FormScreen> {
     keyboardType: TextInputType.text,
     maxLength: _titleMax,
     onTapOutside: _dismissKeyboard,
+    autovalidateMode: _auto,
     validator: _validateTitle,
     decoration: const InputDecoration(
       labelText: 'Title',
@@ -288,6 +294,7 @@ class _FormScreenState extends State<FormScreen> {
         ),
     ],
     onChanged: (genre) => setState(() => _genre = genre),
+    autovalidateMode: _auto,
     validator: _validateGenre,
     decoration: const InputDecoration(
       labelText: 'Genre',
@@ -316,6 +323,7 @@ class _FormScreenState extends State<FormScreen> {
           controller: _day,
           readOnly: true,
           onTap: _pickDay,
+          autovalidateMode: _auto,
           validator: _validateDay,
           decoration: const InputDecoration(
             labelText: 'Date',
@@ -331,6 +339,7 @@ class _FormScreenState extends State<FormScreen> {
           controller: _clock,
           readOnly: true,
           onTap: _pickClock,
+          autovalidateMode: _auto,
           validator: _validateClock,
           decoration: const InputDecoration(
             labelText: 'Time',
@@ -349,6 +358,7 @@ class _FormScreenState extends State<FormScreen> {
     textInputAction: TextInputAction.next,
     keyboardType: _online ? TextInputType.url : TextInputType.text,
     onTapOutside: _dismissKeyboard,
+    autovalidateMode: _auto,
     validator: _validatePlace,
     decoration: InputDecoration(
       labelText: _online ? 'Stream link' : 'Place',
@@ -362,6 +372,7 @@ class _FormScreenState extends State<FormScreen> {
     textInputAction: TextInputAction.next,
     keyboardType: TextInputType.number,
     onTapOutside: _dismissKeyboard,
+    autovalidateMode: _auto,
     validator: _validateSeats,
     decoration: const InputDecoration(
       labelText: 'Seats',
@@ -376,6 +387,7 @@ class _FormScreenState extends State<FormScreen> {
     keyboardType: TextInputType.text,
     maxLines: 3,
     onTapOutside: _dismissKeyboard,
+    autovalidateMode: _auto,
     validator: _validateNote,
     decoration: const InputDecoration(
       labelText: 'Note (optional)',
@@ -439,7 +451,6 @@ class _FormScreenState extends State<FormScreen> {
         // the focused field scrolls itself into view (R37).
         body: Form(
           key: _form,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             children: [
