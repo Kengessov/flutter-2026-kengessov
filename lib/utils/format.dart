@@ -13,8 +13,14 @@ const List<String> _months = <String>[
   'Dec',
 ];
 
+/// "18 Oct" — the date half, for the field whose time lives in its own picker.
+String formatDay(DateTime at) => '${at.day} ${_months[at.month - 1]}';
+
+/// "19:30" from the two numbers a time picker hands back.
+String clockOf(int hour, int minute) => '${_padded(hour)}:${_padded(minute)}';
+
 String formatMoment(DateTime at) =>
-    '${at.day} ${_months[at.month - 1]}, ${_padded(at.hour)}:${_padded(at.minute)}';
+    '${formatDay(at)}, ${clockOf(at.hour, at.minute)}';
 
 String _padded(int value) => value.toString().padLeft(2, '0');
 
