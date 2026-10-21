@@ -4,6 +4,7 @@ import '../models/profile.dart';
 import '../models/screening.dart';
 import '../models/seed.dart';
 import '../routes.dart';
+import '../screens/form_screen.dart';
 import '../tabs/favourites_tab.dart';
 import '../tabs/profile_tab.dart';
 import '../tabs/screenings_tab.dart';
@@ -63,6 +64,17 @@ class _HomeShellState extends State<HomeShell> {
     setState(() {
       _screenings = _screenings.where((item) => item != screening).toList();
     });
+  }
+
+  /// The form answers with a finished screening or with nothing at all:
+  /// backing out returns null, the list stays exactly as it was and no
+  /// exception crosses the await (R27).
+  Future<void> _newScreening() async {
+    final created = await Navigator.of(
+      context,
+    ).pushNamed<Screening>(Routes.form, arguments: const FormArguments());
+    if (created == null || !mounted) return;
+    setState(() => _screenings = [..._screenings, created]);
   }
 
   void _openDetail(Screening screening) {
@@ -189,6 +201,11 @@ class _HomeShellState extends State<HomeShell> {
           ),
           ProfileTab(profile: _profile, screenings: _screenings),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _newScreening,
+        tooltip: 'New screening',
+        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _tab,
