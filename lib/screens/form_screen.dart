@@ -207,6 +207,10 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   Future<void> _save() async {
+    // The button is only redrawn on the next frame, so two quick taps can both
+    // get here before the first one is painted away; the flag stops the second
+    // from starting a second save (R17).
+    if (_saving) return;
     // An unmounted Form has no state to validate, and there is nothing to save
     // either, so the null case simply ends here.
     final form = _form.currentState;
@@ -214,8 +218,7 @@ class _FormScreenState extends State<FormScreen> {
     final item = _compose();
     if (item == null) return;
     // The save is a simulated second of work, so the button has to show it and
-    // go inert while it runs: a null onPressed is what stops a second tap from
-    // producing a second screening (R17).
+    // go inert while it runs (R17).
     setState(() => _saving = true);
     await Future<void>.delayed(const Duration(seconds: 1));
     // If the form vanished during that second, popping now would throw.
