@@ -85,6 +85,7 @@ class _HomeShellState extends State<HomeShell> {
         profile: _profile,
         onBook: _book,
         onCancel: _cancel,
+        onReplace: _replace,
         onDelete: _delete,
         onGoToProfile: _goToProfile,
       ),

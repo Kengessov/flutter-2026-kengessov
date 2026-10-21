@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import '../models/countdown.dart';
 import '../models/profile.dart';
 import '../models/screening.dart';
+import '../routes.dart';
 import '../utils/format.dart';
 import '../widgets/empty_state.dart';
+import 'form_screen.dart';
 
 /// Everything the detail is handed through the route (R26): the item, the
 /// profile it is shown against, and the callbacks that keep the list in the
@@ -17,6 +19,7 @@ class DetailArguments {
     required this.profile,
     required this.onBook,
     required this.onCancel,
+    required this.onReplace,
     required this.onDelete,
     required this.onGoToProfile,
   });
@@ -25,6 +28,11 @@ class DetailArguments {
   final Profile profile;
   final Screening Function(Screening) onBook;
   final Screening Function(Screening) onCancel;
+
+  /// Puts an edited item into the master list and gives the same object back.
+  /// Book and cancel are built by the shell, so they need only the old item;
+  /// an edit arrives already built from the form, so it goes in as a pair.
+  final Screening Function(Screening before, Screening after) onReplace;
   final void Function(Screening) onDelete;
   final VoidCallback onGoToProfile;
 }
@@ -121,6 +129,20 @@ class _DetailScreenState extends State<DetailScreen> {
         ),
       ),
     );
+  }
+
+  /// The form hands back a finished screening, so both copies of it have to
+  /// move: the shell puts it into the master list and this screen swaps its own
+  /// mirror, or the header, the tab label and the buttons keep showing the
+  /// values the form just replaced.
+  Future<void> _edit() async {
+    final next = await Navigator.of(context).pushNamed<Screening>(
+      Routes.form,
+      arguments: FormArguments(screening: _screening),
+    );
+    if (next == null || !mounted) return;
+    final saved = widget.arguments.onReplace(_screening, next);
+    setState(() => _screening = saved);
   }
 
   Future<void> _delete() async {
@@ -358,9 +380,22 @@ class _DetailScreenState extends State<DetailScreen> {
           PopupMenuButton<String>(
             tooltip: 'Screening actions',
             onSelected: (choice) {
-              if (choice == 'delete') _delete();
+              switch (choice) {
+                case 'edit':
+                  _edit();
+                case 'delete':
+                  _delete();
+              }
             },
             itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'edit',
+                child: ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.edit_outlined),
+                  title: Text('Edit'),
+                ),
+              ),
               PopupMenuItem(
                 value: 'delete',
                 child: ListTile(
