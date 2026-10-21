@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'models/screening.dart';
 import 'screens/detail_screen.dart';
+import 'screens/form_screen.dart';
 import 'screens/home_shell.dart';
 
 /// Every route name and every route builder lives here, so no '/' literal
@@ -8,6 +10,7 @@ import 'screens/home_shell.dart';
 class Routes {
   static const String home = '/';
   static const String detail = '/detail';
+  static const String form = '/form';
 
   static final Map<String, WidgetBuilder> appRoutes = <String, WidgetBuilder>{
     home: (context) => const HomeShell(),
@@ -19,6 +22,14 @@ class Routes {
       Routes.detail when arguments is DetailArguments =>
         MaterialPageRoute<Object?>(
           builder: (context) => DetailScreen(arguments: arguments),
+          settings: settings,
+        ),
+      // Typed as Route<Screening> so the caller can await pushNamed<Screening>:
+      // the form hands its result back through pop instead of writing into the
+      // list itself (R26, R27).
+      Routes.form when arguments is FormArguments =>
+        MaterialPageRoute<Screening>(
+          builder: (context) => FormScreen(arguments: arguments),
           settings: settings,
         ),
       _ => onUnknownRoute(settings),
