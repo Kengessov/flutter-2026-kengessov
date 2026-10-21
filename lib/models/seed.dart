@@ -7,13 +7,15 @@ const String youName = 'Nurkhan Kengessov';
 
 /// [total] always matches the number written next to the screening in the table:
 /// one slot goes to [youName] when [withYou] is set, the rest are generated.
-List<String> _viewers(int total, {bool withYou = false}) => [
+/// Unmodifiable, so a leftover handle at the call site cannot change a list that
+/// a [Screening] already stores.
+List<String> _viewers(int total, {bool withYou = false}) => List.unmodifiable([
   if (withYou) youName,
   ...List.generate(
     total - (withYou ? 1 : 0),
     (index) => 'Student ${index + 1}',
   ),
-];
+]);
 
 List<Screening> seedScreenings() {
   final now = DateTime.now();
