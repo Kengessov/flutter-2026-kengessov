@@ -66,6 +66,10 @@ class _HomeShellState extends State<HomeShell> {
     });
   }
 
+  /// The tab validates and hands over a finished profile; the shell stays the
+  /// only place the current one lives (R38).
+  void _saveProfile(Profile profile) => setState(() => _profile = profile);
+
   /// The form answers with a finished screening or with nothing at all:
   /// backing out returns null, the list stays exactly as it was and no
   /// exception crosses the await (R27).
@@ -200,7 +204,11 @@ class _HomeShellState extends State<HomeShell> {
             onOpen: _openDetail,
             onToggleFavourite: _toggleFavourite,
           ),
-          ProfileTab(profile: _profile, screenings: _screenings),
+          ProfileTab(
+            profile: _profile,
+            screenings: _screenings,
+            onSave: _saveProfile,
+          ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
