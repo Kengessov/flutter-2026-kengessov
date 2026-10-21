@@ -207,9 +207,10 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   Future<void> _save() async {
-    // GlobalKey.currentState is null only before its Form has mounted, and this
-    // button lives inside that Form — so it exists whenever Save can be tapped.
-    if (!_form.currentState!.validate()) return;
+    // An unmounted Form has no state to validate, and there is nothing to save
+    // either, so the null case simply ends here.
+    final form = _form.currentState;
+    if (form == null || !form.validate()) return;
     final item = _compose();
     if (item == null) return;
     // The save is a simulated second of work, so the button has to show it and
