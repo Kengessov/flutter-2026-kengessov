@@ -1,8 +1,9 @@
 import 'genre.dart';
 import 'screening.dart';
 
-/// The name the defence types into the profile tab, so that "You" highlighting
-/// and "You are on N lists" work right away.
+/// The name the shell opens with, so "You" highlighting and "Book a seat" work
+/// on first launch. Reset data clears the profile back to empty, which is how
+/// the no-name branch of the primary action is reached.
 const String youName = 'Nurkhan Kengessov';
 
 /// [total] always matches the number written next to the screening in the table:
