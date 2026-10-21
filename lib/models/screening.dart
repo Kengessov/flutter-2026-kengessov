@@ -49,6 +49,10 @@ class Screening {
 
   Countdown get countdown => Countdown.of(when: when, now: DateTime.now());
 
+  /// Booking is gated on the countdown, not on [isPast]: a student who walks in
+  /// forty minutes into a film can still take a free seat, a finished one cannot.
+  bool get canBook => !isFull && countdown is! Ended;
+
   bool contains(String name) {
     final needle = name.trim().toLowerCase();
     return _viewers.any((viewer) => viewer.trim().toLowerCase() == needle);
