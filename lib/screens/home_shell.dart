@@ -23,12 +23,18 @@ class _HomeShellState extends State<HomeShell> {
   List<Screening> _screenings = seedScreenings();
   Profile _profile = Profile(name: youName, group: '');
 
+  /// Items have no ids, so the shell finds the old one by object identity.
+  /// A stale `before` — already replaced or deleted — would rewrite nothing
+  /// and still hand the caller a shiny new screening, so the edit would look
+  /// saved while the list quietly kept the old one.
   Screening _replace(Screening before, Screening after) {
+    final index = _screenings.indexOf(before);
+    assert(
+      index != -1,
+      'The shell no longer holds "${before.title}", nothing was saved.',
+    );
     setState(() {
-      _screenings = [
-        for (final item in _screenings)
-          if (item == before) after else item,
-      ];
+      _screenings = [..._screenings]..[index] = after;
     });
     return after;
   }
