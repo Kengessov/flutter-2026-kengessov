@@ -45,6 +45,7 @@ class _FormScreenState extends State<FormScreen> {
   DateTime? _date;
   TimeOfDay? _time;
   bool _online = false;
+  bool _saving = false;
 
   Screening? get _editing => widget.arguments.screening;
 
@@ -181,6 +182,13 @@ class _FormScreenState extends State<FormScreen> {
     if (!_form.currentState!.validate()) return;
     final item = _compose();
     if (item == null) return;
+    // The save is a simulated second of work, so the button has to show it and
+    // go inert while it runs: a null onPressed is what stops a second tap from
+    // producing a second screening (R17).
+    setState(() => _saving = true);
+    await Future<void>.delayed(const Duration(seconds: 1));
+    // If the form vanished during that second, popping now would throw.
+    if (!mounted) return;
     Navigator.pop(context, item);
   }
 
@@ -343,9 +351,14 @@ class _FormScreenState extends State<FormScreen> {
   );
 
   Widget _saveButton() => FilledButton.icon(
-    onPressed: _save,
-    icon: const Icon(Icons.save_outlined),
-    label: const Text('Save'),
+    onPressed: _saving ? null : _save,
+    icon: _saving
+        ? const SizedBox.square(
+            dimension: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : const Icon(Icons.save_outlined),
+    label: Text(_saving ? 'Saving…' : 'Save'),
   );
 
   @override
