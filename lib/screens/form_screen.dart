@@ -14,6 +14,20 @@ class FormArguments {
   final Screening? screening;
 }
 
+/// The screen values a dirty check compares, text included. "Dirty" means
+/// "different from what the form opened with", not "a key was pressed": a
+/// screening whose date was picked and then put back is clean again (R30).
+typedef FormSnapshot = ({
+  String title,
+  Genre? genre,
+  DateTime? date,
+  TimeOfDay? time,
+  String place,
+  String seats,
+  bool online,
+  String note,
+});
+
 class FormScreen extends StatefulWidget {
   const FormScreen({super.key, required this.arguments});
 
@@ -47,6 +61,8 @@ class _FormScreenState extends State<FormScreen> {
   bool _online = false;
   bool _saving = false;
 
+  late final FormSnapshot _opened;
+
   Screening? get _editing => widget.arguments.screening;
 
   @override
@@ -73,6 +89,7 @@ class _FormScreenState extends State<FormScreen> {
     for (final controller in [_title, _place, _seats, _note]) {
       controller.addListener(_rebuild);
     }
+    _opened = _current;
   }
 
   /// The typed text never rebuilds this screen on its own, and both the
@@ -97,6 +114,19 @@ class _FormScreenState extends State<FormScreen> {
     _noteNode.dispose();
     super.dispose();
   }
+
+  FormSnapshot get _current => (
+    title: _title.text,
+    genre: _genre,
+    date: _date,
+    time: _time,
+    place: _place.text,
+    seats: _seats.text,
+    online: _online,
+    note: _note.text,
+  );
+
+  bool get _dirty => _current != _opened;
 
   DateTime _moment(DateTime date, TimeOfDay time) =>
       DateTime(date.year, date.month, date.day, time.hour, time.minute);
@@ -361,36 +391,71 @@ class _FormScreenState extends State<FormScreen> {
     label: Text(_saving ? 'Saving…' : 'Save'),
   );
 
+  Future<void> _askDiscard() async {
+    final discard = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Discard changes?'),
+        content: const Text('Nothing you typed here leaves the screen.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep editing'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Discard'),
+          ),
+        ],
+      ),
+    );
+    if (discard != true || !mounted) return;
+    // PopScope only refuses gestures and the arrow; Navigator.pop from inside
+    // is the one way out while canPop is false, which is what an accepted
+    // discard needs (R30). Save does the same thing with a result attached.
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(_editing == null ? 'New screening' : 'Edit screening'),
-      ),
-      // One scrolling column, no Spacer: the keyboard shrinks the viewport and
-      // the focused field scrolls itself into view (R37).
-      body: Form(
-        key: _form,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-          children: [
-            _titleField(),
-            const SizedBox(height: 12),
-            _genreField(),
-            const SizedBox(height: 12),
-            _modeTile(),
-            const SizedBox(height: 12),
-            _whenRow(),
-            const SizedBox(height: 12),
-            _placeField(),
-            const SizedBox(height: 12),
-            _seatsField(),
-            const SizedBox(height: 12),
-            _noteField(),
-            const SizedBox(height: 24),
-            _saveButton(),
-          ],
+    return PopScope(
+      // One comparison decides every way out — the AppBar arrow, the Android
+      // back gesture, the system back button — and Save, which pops straight
+      // through it, never asks (R30).
+      canPop: !_dirty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        _askDiscard();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(_editing == null ? 'New screening' : 'Edit screening'),
+        ),
+        // One scrolling column, no Spacer: the keyboard shrinks the viewport and
+        // the focused field scrolls itself into view (R37).
+        body: Form(
+          key: _form,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            children: [
+              _titleField(),
+              const SizedBox(height: 12),
+              _genreField(),
+              const SizedBox(height: 12),
+              _modeTile(),
+              const SizedBox(height: 12),
+              _whenRow(),
+              const SizedBox(height: 12),
+              _placeField(),
+              const SizedBox(height: 12),
+              _seatsField(),
+              const SizedBox(height: 12),
+              _noteField(),
+              const SizedBox(height: 24),
+              _saveButton(),
+            ],
+          ),
         ),
       ),
     );
