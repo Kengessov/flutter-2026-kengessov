@@ -25,8 +25,6 @@ class Screening {
       note = null,
       favourite = false;
 
-  static const Object _keep = Object();
-
   final String title;
   final Genre genre;
   final DateTime when;
@@ -51,10 +49,11 @@ class Screening {
 
   Countdown get countdown => Countdown.of(when: when, now: DateTime.now());
 
-  bool contains(String name) => _viewers.contains(name);
+  bool contains(String name) {
+    final needle = name.trim().toLowerCase();
+    return _viewers.any((viewer) => viewer.trim().toLowerCase() == needle);
+  }
 
-  // `note` is Object? with a sentinel because a plain `String? note` could not
-  // tell "caller left it out" apart from "caller wants to clear the note".
   Screening copyWith({
     String? title,
     Genre? genre,
@@ -63,7 +62,8 @@ class Screening {
     int? seats,
     List<String>? viewers,
     bool? online,
-    Object? note = _keep,
+    String? note,
+    bool clearNote = false,
     bool? favourite,
   }) => Screening(
     title: title ?? this.title,
@@ -73,11 +73,7 @@ class Screening {
     seats: seats ?? this.seats,
     viewers: viewers ?? _viewers,
     online: online ?? this.online,
-    note: identical(note, _keep)
-        ? this.note
-        : note is String
-        ? note
-        : null,
+    note: clearNote ? null : note ?? this.note,
     favourite: favourite ?? this.favourite,
   );
 }
